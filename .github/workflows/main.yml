@@ -1,0 +1,55 @@
+name: MLflow CI Retraining
+
+on:
+  push:
+    paths:
+      - "MLProject/**"
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout kode dari repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Setup Python
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.7"
+
+      # 3. Cek environment (debug info)
+      - name: Check environment info
+        run: |
+          echo "Branch: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mlflow pandas numpy scikit-learn matplotlib seaborn
+
+      # 5. Jalankan MLflow Project
+      - name: Run MLflow project
+        run: |
+          cd MLProject
+          mlflow run . -P data_path=sleep_cycle_preprocessed.csv --env-manager=local
+          cd ..
+
+      # 6. Ambil run_id terbaru (optional debug)
+      - name: Get latest MLflow run_id
+        run: |
+          RUN_ID=$(ls -td MLProject/mlruns/0/*/ | head -n 1 | cut -d'/' -f4)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Latest run_id: $RUN_ID"
+
+      # 7. Upload artefak ke GitHub (zip isi mlruns/)
+      - name: Upload MLflow artifacts to GitHub
+        uses: actions/upload-artifact@v3
+        with:
+          name: mlflow-artifacts
+          path: MLProject/mlruns/
