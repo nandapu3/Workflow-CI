@@ -1,0 +1,10 @@
+name: sleep-quality-regression
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      data_path: {type: str, default: "sleep_cycle_preprocessed.csv"}
+    command: >
+      python modeling.py --data_path {data_path}
