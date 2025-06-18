@@ -16,7 +16,6 @@ args = parser.parse_args()
 dataset_path = args.data_path
 
 # Setup MLflow
-mlflow.set_experiment("Sleep_Cycle_Experiment_Regressor")
 mlflow.autolog()
 
 # Load data
